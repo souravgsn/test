@@ -1,49 +1,38 @@
 #include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
 #include <stdlib.h>
-int main()
-{
-    int i = 0, ie = 0, io = 0, n, temp;
-    printf("Input the value of n: ");
+#include <unistd.h>
+
+int main() {
+    int n;
+    printf("Enter a number: ");
     scanf("%d", &n);
 
-    char bufAllW[n], bufAllR[n], bufOddW[n], bufOddR[n], bufEvenW[n],
-        bufEvenR[n];
-    for (i = 0; i < n; i++)
-    {
-        bufAllW[0] = i;
+    // Open the files for writing
+    int evenFd = open("even.txt", O_CREAT | O_TRUNC | O_WRONLY, 0644);
+    int oddFd = open("odd.txt", O_CREAT | O_TRUNC | O_WRONLY, 0644);
+
+    // Check if the files were successfully opened
+    if (evenFd < 0 || oddFd < 0) {
+        printf("Error opening files\n");
+        exit(1);
     }
 
-    int fdAll, fdEven, fdOdd;
-    fdAll = open("All.txt", O_CREAT | O_WRONLY, S_IRWXU);
-    write(fdAll, bufAllW, n);
-
-    read(fdAll, bufAllR, n);
-
-    for (i = 0; i < n; i++)
-    {
-        temp = bufAllR[i];
-        if (temp % 2 == 0)
-        {
-            bufEvenW[ie] = bufAllR[i];
-            ie++;
-        }
-        else
-        {
-            bufOddW[io] = bufAllR[i];
-            ie++;
+    // Write the even and odd numbers to their respective files
+    for (int i = 1; i <= n; i++) {
+        if (i % 2 == 0) {
+            char buffer[20];
+            int len = sprintf(buffer, "%d\n", i);
+            write(evenFd, buffer, len);
+        } else {
+            char buffer[20];
+            int len = sprintf(buffer, "%d\n", i);
+            write(oddFd, buffer, len);
         }
     }
-    close(fdAll);
-    fdEven = open("Even.txt", O_CREAT | O_RDWR, S_IRWXU);
-    write(fdEven, bufEvenW, n / 2);
-    close(fdEven);
 
-    fdOdd = open("Odd.txt", O_CREAT | O_RDWR, S_IRWXU);
-    write(fdOdd, bufOddW, n / 2);
-    close(fdOdd);
+    // Close the files
+    close(evenFd);
+    close(oddFd);
 
     return 0;
 }
